@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unicode Text Styler</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 1rem;
+      margin: 0;
+      max-width: 480px;
+      margin: auto;
+      background: #f9f9f9;
+    }
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    .styled-output {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.8rem;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>Unicode Text Styler</h2>
+  <input type="text" id="inputText" placeholder="Type something..." oninput="convertText()">
+  <div id="output"></div>
+
+  <script>
+    const buildAlphabetMap = (baseCodeA, baseCodea) => {
+      const map = {};
+      for (let i = 0; i < 26; i++) {
+        map[String.fromCharCode(65 + i)] = String.fromCodePoint(baseCodeA + i);
+        map[String.fromCharCode(97 + i)] = String.fromCodePoint(baseCodea + i);
+      }
+      return map;
+    };
+
+    const styles = {
+      bold: buildAlphabetMap(0x1D400, 0x1D41A),
+      italic: {
+        A: "𝐴", B: "𝐵", C: "𝐶", D: "𝐷", E: "𝐸", F: "𝐹", G: "𝐺", H: "𝐻", I: "𝐼", J: "𝐽", K: "𝐾", L: "𝐿", M: "𝑀", N: "𝑁", O: "𝑂", P: "𝑃", Q: "𝑄", R: "𝑅", S: "𝑆", T: "𝑇", U: "𝑈", V: "𝑉", W: "𝑊", X: "𝑋", Y: "𝑌", Z: "𝑍",
+        a: "𝑎", b: "𝑏", c: "𝑐", d: "𝑑", e: "𝑒", f: "𝑓", g: "𝑔", h: "ℎ", i: "𝑖", j: "𝑗", k: "𝑘", l: "𝑙", m: "𝑚", n: "𝑛", o: "𝑜", p: "𝑝", q: "𝑞", r: "𝑟", s: "𝑠", t: "𝑡", u: "𝑢", v: "𝑣", w: "𝑤", x: "𝑥", y: "𝑦", z: "𝑧"
+      },
+      boldItalic: buildAlphabetMap(0x1D468, 0x1D482),
+      script: {
+        ...buildAlphabetMap(0x1D49C, 0x1D4B6),
+        B: "ℬ", E: "ℰ", F: "ℱ", H: "ℋ", I: "ℐ", L: "ℒ", M: "ℳ", R: "ℛ",
+        e: "ℯ", g: "ℊ", o: "ℴ"
+      },
+      boldScript: buildAlphabetMap(0x1D4D0, 0x1D4EA),
+      fraktur: {
+        ...buildAlphabetMap(0x1D504, 0x1D51E),
+        C: "ℭ", H: "ℌ", I: "ℑ", R: "ℜ", Z: "ℨ"
+      },
+      doubleStruck: {
+        ...buildAlphabetMap(0x1D538, 0x1D552),
+        C: "ℂ", H: "ℍ", N: "ℕ", P: "ℙ", Q: "ℚ", R: "ℝ", Z: "ℤ"
+      },
+      monospace: buildAlphabetMap(0x1D670, 0x1D68A),
+      circled: buildAlphabetMap(0x24B6, 0x24D0),
+      fullwidth: buildAlphabetMap(0xFF21, 0xFF41),
+      asianlike: {
+        A: "丹", B: "书", C: "亡", D: "刀", E: "巨", F: "下", G: "写", H: "卄", I: "工", J: "丁", K: "片", L: "乚", M: "从", N: "几", O: "口", P: "尸", Q: "甲", R: "尺", S: "丂", T: "丁", U: "凵", V: "リ", W: "山", X: "乂", Y: "丫", Z: "乙",
+        a: "丹", b: "书", c: "亡", d: "刀", e: "巨", f: "下", g: "写", h: "卄", i: "工", j: "丁", k: "片", l: "乚", m: "从", n: "几", o: "口", p: "尸", q: "甲", r: "尺", s: "丂", t: "丁", u: "凵", v: "リ", w: "山", x: "乂", y: "丫", z: "乙"
+      }
+    };
+
+    function convertText() {
+      const text = document.getElementById('inputText').value;
+      const outputDiv = document.getElementById('output');
+      outputDiv.innerHTML = '';
+
+      Object.entries(styles).forEach(([styleName, styleMap]) => {
+        let converted = '';
+        for (let char of text) {
+          converted += styleMap[char] || char;
+        }
+
+        const block = document.createElement('div');
+        block.className = 'styled-output';
+        block.innerHTML = `<div id="${styleName}-text">${converted}</div><button class="copy-btn" onclick="copyText('${styleName}-text')">Copy</button>`;
+        outputDiv.appendChild(block);
+      });
+    }
+
+    function copyText(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Copied to clipboard!");
+      });
+    }
+  </script>
+</body>
+</html>
